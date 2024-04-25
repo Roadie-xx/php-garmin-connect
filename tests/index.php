@@ -3,7 +3,45 @@ ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
-include '../src/garmin.php';
+use Roadie\oAuth;
+
+function roadies_autoloader($class)
+{
+    $mapping = [
+        'Roadie\\' => '../src/',
+    ];
+
+    /**
+     * @var string $prefix project-specific namespace prefix
+     * @var string $baseDir base directory for the namespace prefix
+     */
+    foreach ($mapping as $prefix => $baseDir) {
+        // does the class use the namespace prefix?
+        $len = strlen($prefix);
+
+        if (strncmp($prefix, $class, $len) !== 0) {
+            // no, move to the next registered autoloader
+            return;
+        }
+
+        // get the relative class name
+        $relativeClass = substr($class, $len);
+
+        // replace the namespace prefix with the base directory, replace namespace
+        // separators with directory separators in the relative class name, append
+        // with .php
+        $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
+
+        // if the file exists, require it
+        if (file_exists($file)) {
+            require $file;
+            return;
+        }
+    }
+}
+
+spl_autoload_register('roadies_autoloader');
+
 
 function dump($subject) {
     echo '<pre>';
