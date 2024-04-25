@@ -11,6 +11,24 @@ function dump($subject) {
     echo '</pre>';
 }
 
+function assertSame($expected, $actual, $message = '') {
+
+    if ($expected === $actual) {
+        echo sprintf('<h4 style="color: green;">%s</h4>', $message);
+        echo sprintf(
+            '<div style="font-family: monospace">Value <pre>%s</pre></div>',
+            $actual
+        );
+    } else {
+        echo sprintf('<h4 style="color: red;">%s</h4>', $message);
+        echo sprintf(
+            '<div style="font-family: monospace">Expected <pre>%s</pre><br>Actual <pre>%s</pre></div>',
+            $expected,
+            $actual
+        );
+    }
+}
+
 
 // Based on js garmin-connect data
 $consumer = [
