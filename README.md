@@ -20,6 +20,11 @@ $client = new GarminClient($curl);
 $client->login('Login name', 'Password');
 ````
 
+## Dependencies
+This project has been tested with PHP 7.0+ and relies on `return type declaration` and `scalar type hints`, 
+which are only allowed since PHP 7.0. 
+
+
 This project is heavily based on: 
 - [garmin-connect](https://github.com/Pythe1337N/garmin-connect): A powerful JavaScript library for connecting to Garmin Connect for sending and receiving health and workout data.
 - [oauth-1.0a](https://github.com/ddo/oauth-1.0a): OAuth 1.0a Request Authorization for Node and Browser
