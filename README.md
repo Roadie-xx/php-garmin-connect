@@ -9,6 +9,16 @@ Branches:
 - Add tests
 - Reuse key
 - Add renew key
+- Better error handling
+
+## How to use
+````php
+$curl = new Curl();
+
+$client = new GarminClient($curl);
+
+$client->login('Login name', 'Password');
+````
 
 This project is heavily based on: 
 - [garmin-connect](https://github.com/Pythe1337N/garmin-connect): A powerful JavaScript library for connecting to Garmin Connect for sending and receiving health and workout data.
