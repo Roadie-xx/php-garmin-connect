@@ -1,7 +1,11 @@
 <?php
 include '../src/garmin.php';
 
-
+function dump($subject) {
+    echo '<pre>';
+    var_dump($subject);
+    echo '</pre>';
+}
 
 
 // Based on js garmin-connect data
