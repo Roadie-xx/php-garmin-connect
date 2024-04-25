@@ -11,7 +11,7 @@ Branches:
 - Add renew key
 
 This project is heavily based on: 
-- [https://github.com/Pythe1337N/garmin-connect/](garmin-connect): A powerful JavaScript library for connecting to Garmin Connect for sending and receiving health and workout data.
-- [https://github.com/ddo/oauth-1.0a](oauth-1.0a): OAuth 1.0a Request Authorization for Node and Browser
-- [https://github.com/frankforte/tmhOAuth](tmhOAuth) : An OAuth library written in PHP
+- [garmin-connect](https://github.com/Pythe1337N/garmin-connect): A powerful JavaScript library for connecting to Garmin Connect for sending and receiving health and workout data.
+- [oauth-1.0a](https://github.com/ddo/oauth-1.0a): OAuth 1.0a Request Authorization for Node and Browser
+- [tmhOAuth](https://github.com/themattharris/tmhOAuth) : An OAuth library written in PHP
 - And so many online resources... Thank you DuckDuck and Google
