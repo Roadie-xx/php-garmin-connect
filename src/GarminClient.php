@@ -1,17 +1,9 @@
 <?php
 
-// Based on
-// https://github.com/matin/garth/blob/main/garth/sso.py
-// https://github.com/Pythe1337N/garmin-connect/blob/master/src/common/HttpClient.ts
-// https://github.com/Pythe1337N/garmin-connect/blob/master/src/garmin/UrlClass.ts
-// https://github.com/themattharris/tmhOAuth/blob/master/tmhOAuth.php
+namespace Roadie;
 
-
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
-error_reporting(E_ALL);
-
-class GarminClient {
+class GarminClient
+{
     /**
      * @var string
      */
@@ -41,6 +33,11 @@ class GarminClient {
      * @var string
      */
     private $ticket;
+
+    /**
+     * @var mixed
+     */
+    private $token;
 
     public function __construct(Curl $curl) {
         $this->curl = $curl;
@@ -126,7 +123,7 @@ class GarminClient {
 
         $pattern = '/name="_csrf"\\s+value="(.+?)"/';
 
-        if (preg_match($pattern, $response, $match)){
+        if (preg_match($pattern, $response, $match)) {
             $this->csrfToken = $match[1];
 
             $this->debug('Found token', sprintf('Found token: "%s"', $this->csrfToken));
@@ -192,7 +189,9 @@ class GarminClient {
         ];
 
         $url = 'https://connectapi.garmin.com/oauth-service/oauth/preauthorized?' . http_build_query($params);
-// $url = 'https://webhook.site/4babb031-1c59-4554-bc58-03244bb3b435?' . http_build_query($params);
+        // For debugging, this can be handy
+        // $url = 'https://webhook.site/4babb031-1c59-4554-bc58-03244bb3b435?' . http_build_query($params);
+
         $headers = $this->getAuthorizeDataAsHeader($url, $params);
         $headers['User-Agent'] = 'com.garmin.android.apps.connectmobile';
 
@@ -208,7 +207,6 @@ class GarminClient {
         $this->debug('oAuth Token',sprintf('Received token: "%s"', print_r($this->oauth1Token, true)));
     }
 
-
     private function exchange()
     {
         $token = [
@@ -221,8 +219,6 @@ class GarminClient {
             'method' => 'POST',
             'data' => null,
         ];
-
-        // $url = 'https://connectapi.garmin.com/oauth-service/oauth/exchange/user/2.0?' . http_build_query($data);
 
         $authData = $this->getAuthorizeData($data, $token);
 
@@ -255,13 +251,11 @@ class GarminClient {
         $this->debugLines[] = sprintf('<dt>%s</dt><dd>%s</dd>', $title, nl2br(htmlentities($response)));
     }
 
-
     private function handleBLockedAccount(string $response)
     {
         $pattern = '/Sorry, you have been blocked/';
 
         if (preg_match($pattern, $response)) {
-//            echo $response;
             die('Login failed (Account Blocked)');
         }
     }
@@ -290,11 +284,11 @@ class GarminClient {
             'method' => 'GET',
         ];
 
-        $oAuth = new OAuth($consumer);
+        $oAuth = new OAuth($consumer); // @ToDo refactor to dependency injection
 
         $signature = $oAuth->getSignature($request, $params);
 
-        $oAuthData = $oAuth->mergeParameters($params, false);
+        $oAuthData = $oAuth->mergeParameters($params);
         $oAuthData['oauth_signature'] = rawurlencode($signature);
 
         $oAuthDataItems = array_map(function ($key, $value) {
@@ -310,10 +304,8 @@ class GarminClient {
 
         $this->debug('Step 4: oAuth Items', print_r($oAuthDataItems, true));
 
-
         return ['Authorization' => 'OAuth ' .  implode(', ', $oAuthDataItems)];
     }
-
 
     private function getAuthorizeData(array $params, array $token) {
         // https://thegarth.s3.amazonaws.com/oauth_consumer.json
@@ -328,13 +320,9 @@ class GarminClient {
             'data' => [],
         ];
 
+        $oAuth = new OAuth($consumer); // @ToDo Don't repeat yourself !
 
-        $oAuth = new OAuth($consumer);
-
-        // $params['oauth_token'] = $token['key'];
-        // $params['oauth_token_secret'] = $token['secret'];
         $params = [
-            // 'oauth_token' => $token['key'],
             'oauth_consumer_key' => $oAuth->getConsumerKey(),
             'oauth_nonce' => $oAuth->getNonce(),
             'oauth_signature_method' => 'HMAC-SHA1',
@@ -342,312 +330,22 @@ class GarminClient {
             'oauth_token_secret' => $token['secret'],
             'oauth_timestamp' => $oAuth->getTimestamp(),
             'oauth_version' => '1.0',
-            // 'oauth_token_secret' => $token['secret'],
         ];
 
         $signature = $oAuth->getSignature($request, $params);
-
-        // $oAuthData = $oAuth->mergeParameters($params, false);
-        // $oAuthData['oauth_signature'] = rawurlencode($signature);
-
-
 
         $oAuthData = [
             'oauth_consumer_key' => $oAuth->getConsumerKey(),
             'oauth_nonce' => $oAuth->getNonce(),
             'oauth_signature_method' => 'HMAC-SHA1',
             'oauth_token' => $token['key'],
-            // 'oauth_token_secret' => $token['secret'],
             'oauth_timestamp' => $oAuth->getTimestamp(),
             'oauth_version' => '1.0',
-            // 'oauth_signature' => rawurlencode($signature),
             'oauth_signature' => $signature,
         ];
-
-
-        // $oAuthData = array_filter($oAuthData, function ($value, $key) {
-        //     return strpos($key, 'oauth_') === 0;
-        // }, ARRAY_FILTER_USE_BOTH); 
-
 
         $this->debug('Step 5: oAuth Items', print_r($oAuthData, true));
 
         return $oAuthData;
     }
-
 }
-
-class Curl {
-    public function get(string $url, array $headers = [], bool $useCookie = false): string
-    {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-//        curl_setopt($ch, CURLOPT_NOBODY, true);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, dirname(__FILE__) . DIRECTORY_SEPARATOR . 'cookie.txt');
-//        $http_headers = array(
-//            'Host: www.google.ca',
-//            'User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:6.0.2) Gecko/20100101 Firefox/6.0.2',
-//            'Accept: */*',
-//            'Accept-Language: en-us,en;q=0.5',
-//            'Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7',
-//            'Connection: keep-alive'
-//        );
-//        curl_setopt($ch, CURLOPT_HEADER, true);
-//        curl_setopt($ch, CURLOPT_HTTPHEADER, $http_headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36');
-
-
-//        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
-//        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-
-        if (! empty($headers)) {
-            foreach ($headers as $key => $value) {
-                if (! is_numeric($key)) {
-                    $headers[] = sprintf('%s: %s', $key, $value);
-                    unset($headers[$key]);
-                }
-            }
-
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        }
-
-        if ($useCookie) {
-            curl_setopt($ch, CURLOPT_COOKIEFILE, dirname(__FILE__) . DIRECTORY_SEPARATOR . 'cookie.txt');
-        }
-
-        curl_setopt($ch, CURLOPT_VERBOSE, true);
-
-        $output = curl_exec($ch);
-
-        curl_close($ch);
-
-        if ($output === false) {
-            die(sprintf('Requested url: %s\nError: "%s" - Code: %s', $url, curl_error($ch), curl_errno($ch)));
-        }
-
-        return $output;
-    }
-
-    public function post(string $url, array $postData, array $headers = [], bool $useCookie = false): string
-    {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, dirname(__FILE__) . DIRECTORY_SEPARATOR . 'cookie.txt');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36');
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-
-//        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-
-//        curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        if (!empty($postData)) {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
-        }
-//        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
-
-        if ($useCookie) {
-            curl_setopt($ch, CURLOPT_COOKIEFILE, dirname(__FILE__) . DIRECTORY_SEPARATOR . 'cookie.txt');
-        }
-
-        curl_setopt($ch, CURLOPT_VERBOSE, true);
-
-        if (! empty($headers)) {
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-            if (isset($headers['Referer'])) {
-                curl_setopt($ch, CURLOPT_REFERER, $headers['Referer']);
-            }
-        }
-
-        
-        $curl_log = fopen("curl.txt", 'w');
-        curl_setopt($ch, CURLOPT_STDERR, $curl_log);
-        // curl_setopt($ch, CURLOPT_HEADER, true);
-        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
-
-        $output = curl_exec($ch);
-
-// Get information about the request
-$info = curl_getinfo($ch);
-
-// Print the information
-echo sprintf('<pre>%s</pre>', print_r($info, true));
-
-        curl_close($ch);
-
-        if ($output === false) {
-            die(sprintf('Requested url: %s\nError: "%s" - Code: %s', $url, curl_error($ch), curl_errno($ch)));
-        }
-
-        return $output;
-    }
-}
-
-
-
-class oAuth {
-    /**
-     * @var mixed
-     */
-    private $consumerKey;
-    /**
-     * @var mixed
-     */
-    private $consumerSecret;
-
-    /**
-     * @var string
-     */
-    private $nonce;
-    /**
-     * @var string
-     */
-    private $timestamp;
-
-    public function __construct(array $consumer)
-    {
-        $this->consumerKey = $consumer['consumer_key'];
-        $this->consumerSecret = $consumer['consumer_secret'];
-
-        $this->nonce = $this->createNonce(32);
-        $this->timestamp = (string) time();
-    }
-
-    // See https://stackoverflow.com/questions/52785040/generating-oauth-1-signature-in-php
-    public function getSignature(array $request, array $parameters): string
-    {
-        $signatureBaseString = $this->getSignatureBaseString($request, $parameters);
-        $signatureKey = $this->getSignatureKey($parameters);
-        echo '<pre>';
-        var_dump($signatureBaseString);
-        var_dump($signatureKey);
-        echo '</pre>';
-
-        return base64_encode(hash_hmac('sha1', $signatureBaseString, $signatureKey, true));
-    }
-
-    public function getSignatureKey(array $parameters): string
-    {
-        // $parameters = $this->mergeParameters($parameters);
-        $signatureKey = rawurlencode($this->consumerSecret) . '&';
-
-        if (isset($parameters['oauth_token_secret']) && $parameters['oauth_token_secret'] !== '') {
-            $signatureKey .= rawurlencode($parameters['oauth_token_secret']);
-            // $signatureKey .= $parameters['oauth_token_secret'];
-        }
-
-        return $signatureKey;
-    }
-
-    public function getSignatureBaseString(array $request, array $parameters): string
-    {
-        $parameters = $this->mergeParameters($parameters);
-
-        $method = strtoupper($request['method']);
-        $url = explode('?', $request['url'])[0];
-
-        unset($parameters['oauth_signature']);
-        unset($parameters['oauth_token_secret']);
-
-        ksort($parameters);
-
-        $parametersItems = array_map(
-            function ($key, $value) {
-                return sprintf('%s=%s', rawurlencode($key), rawurlencode($value));
-            }, 
-            array_keys($parameters), 
-            $parameters
-        );
-
-        return sprintf(
-            '%s&%s&%s',
-            $method,
-            rawurlencode($url),
-            rawurlencode(implode('&', $parametersItems))
-        );
-    }
-
-    public function setNonce(string $nonce)
-    {
-        $this->nonce = $nonce;
-    }
-
-    public function setTimestamp(int $timestamp)
-    {
-        $this->timestamp = (string) $timestamp;
-    }
-
-    public function mergeParameters(array $parameters, bool $sort = true): array
-    {
-        $oAuthParams = [
-            'oauth_consumer_key' => $this->consumerKey,
-            'oauth_nonce' => $this->nonce,
-            'oauth_signature_method' => 'HMAC-SHA1',
-            //'oauth_token' => $oauth_access_token,
-            'oauth_timestamp' => $this->timestamp,
-            'oauth_version' => '1.0',
-        ];
-
-        $mergedArray = array_merge($oAuthParams, $parameters);
-//        if ($sort === true) {
-            ksort($mergedArray);
-//        }
-
-        return $mergedArray;
-    }
-
-    private function createNonce(int $length): string
-    {
-        $wordCharacters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        $result = '';
-
-        for ($i = 0; $i < $length; $i++) {
-            $result .= $wordCharacters[rand(0, strlen($wordCharacters) - 1)];
-        }
-
-        return $result;
-    }
-    
-    public function getNonce()
-    {
-        return $this->nonce;
-    }    
-    public function getTimestamp()
-    {
-        return $this->timestamp;
-    }    
-    public function getConsumerKey()
-    {
-        return $this->consumerKey;
-    }
-
-    private function normalizeParameters()
-    {
-
-    }
-}
-
-function assertSame($expected, $actual, $message = '') {
-
-    if ($expected === $actual) {
-        echo sprintf('<h4 style="color: green;">%s</h4>', $message);
-        echo sprintf(
-            '<div style="font-family: monospace">Value <pre>%s</pre></div>',
-            $actual
-        );
-    } else {
-        echo sprintf('<h4 style="color: red;">%s</h4>', $message);
-        echo sprintf(
-            '<div style="font-family: monospace">Expected <pre>%s</pre><br>Actual <pre>%s</pre></div>',
-            $expected,
-            $actual
-        );
-    }
-}
-
