@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Roadie;
 
 class oAuth
@@ -31,7 +33,7 @@ class oAuth
         $this->timestamp = (string) time();
     }
 
-    public function getConsumerKey()
+    public function getConsumerKey(): string
     {
         return $this->consumerKey;
     }
@@ -112,12 +114,12 @@ class oAuth
         return $mergedArray;
     }
 
-    public function setNonce(string $nonce)
+    public function setNonce(string $nonce): void
     {
         $this->nonce = $nonce;
     }
 
-    public function setTimestamp(int $timestamp)
+    public function setTimestamp(int $timestamp): void
     {
         $this->timestamp = (string) $timestamp;
     }

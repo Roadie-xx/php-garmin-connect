@@ -13,6 +13,9 @@ Branches:
 
 ## How to use
 ````php
+use Roadie/Curl;
+use Roadie/GarminClient;
+
 $curl = new Curl();
 
 $client = new GarminClient($curl);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Roadie;
 
 class GarminClient
@@ -43,12 +45,13 @@ class GarminClient
         $this->curl = $curl;
     }
 
-    public function login(string $username, string $password)
+    public function login(string $username, string $password): void
     {
         $this->getLoginTicket($username, $password);
     }
 
-    private function getLoginTicket(string $username, string $password) {
+    private function getLoginTicket(string $username, string $password): void
+    {
         // Step 1
         $this->setCookie();
 
@@ -68,6 +71,7 @@ class GarminClient
         $this->getActivities(0, 25);
     }
 
+    // Todo Extract last two rows
     private function getActivities(int $start = 0, int $limit = 1)
     {
         $params = [
@@ -93,7 +97,8 @@ class GarminClient
         file_put_contents("activities_temp.json", $result);
     }
 
-    private function setCookie() {
+    private function setCookie(): void
+    {
         $params = [
             'clientId' => 'GarminConnect',
             'locale' => 'en',
@@ -107,7 +112,8 @@ class GarminClient
         $this->debug('Step 1: Set cookie', $response);
     }
 
-    private function getCsrf() {
+    private function getCsrf(): void
+    {
         $params = [
             'id' => 'gauth-widget',
             'embedWidget' => true,
@@ -132,7 +138,7 @@ class GarminClient
         }
     }
 
-    private function getTicket(string $username, string $password)
+    private function getTicket(string $username, string $password): void
     {
         $params = [
             'id' => 'gauth-widget',
@@ -181,7 +187,8 @@ class GarminClient
         }
     }
 
-    private function getOauth1Token() {
+    private function getOauth1Token(): void
+    {
         $params = [
             'ticket' => $this->ticket,
             'login-url' => 'https://sso.garmin.com/sso/embed',
@@ -207,7 +214,7 @@ class GarminClient
         $this->debug('oAuth Token',sprintf('Received token: "%s"', print_r($this->oauth1Token, true)));
     }
 
-    private function exchange()
+    private function exchange(): void
     {
         $token = [
             'key' => $this->oauth1Token['oauth_token'],
@@ -246,12 +253,12 @@ class GarminClient
 
     }
 
-    private function debug(string $title, string $response)
+    private function debug(string $title, string $response): void
     {
         $this->debugLines[] = sprintf('<dt>%s</dt><dd>%s</dd>', $title, nl2br(htmlentities($response)));
     }
 
-    private function handleBLockedAccount(string $response)
+    private function handleBLockedAccount(string $response): void
     {
         $pattern = '/Sorry, you have been blocked/';
 
@@ -260,7 +267,7 @@ class GarminClient
         }
     }
 
-    private function handleLockedAccount(string $response)
+    private function handleLockedAccount(string $response): void
     {
         $pattern = '/var statuss*=s*"([^"]*)"/';
 
@@ -272,7 +279,8 @@ class GarminClient
         }
     }
 
-    private function getAuthorizeDataAsHeader(string $url, array $params) {
+    private function getAuthorizeDataAsHeader(string $url, array $params): array
+    {
         // https://thegarth.s3.amazonaws.com/oauth_consumer.json
         $consumer = [
             'consumer_key' => 'fc3e99d2-118c-44b8-8ae3-03370dde24c0',
@@ -307,7 +315,8 @@ class GarminClient
         return ['Authorization' => 'OAuth ' .  implode(', ', $oAuthDataItems)];
     }
 
-    private function getAuthorizeData(array $params, array $token) {
+    private function getAuthorizeData(array $params, array $token): array
+    {
         // https://thegarth.s3.amazonaws.com/oauth_consumer.json
         $consumer = [
             'consumer_key' => 'fc3e99d2-118c-44b8-8ae3-03370dde24c0',
