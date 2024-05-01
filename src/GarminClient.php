@@ -68,11 +68,31 @@ class GarminClient
         $this->exchange();
 
         // Step 6: Get activities
-        $this->getActivities(0, 25);
+        // $this->getActivities(0, 25);
+    }
+
+    public function getGpx($activityId): void
+    {
+        $url = sprintf(
+           'https://connectapi.garmin.com/download-service/export/gpx/activity/%s?full=true',
+           $activityId
+        );
+
+        $this->debug('Step 7: url', $url);
+
+        $headers = [
+            'Authorization' => sprintf('Bearer %s', $this->token['access_token']),
+        ];
+
+        $response = $this->curl->get($url, $headers);
+
+        $this->debug('Step 7: Get gpx', $response);
+
+        file_put_contents(sprintf('activity_%s.gpx', $activityId), $response);
     }
 
     // Todo Extract last two rows
-    private function getActivities(int $start = 0, int $limit = 1)
+    public function getActivities(int $start = 0, int $limit = 1)
     {
         $params = [
             'start' => $start,
