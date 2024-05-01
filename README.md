@@ -13,20 +13,38 @@ Branches:
 
 ## How to use
 ````php
-use Roadie/Curl;
-use Roadie/GarminClient;
+<?php
+
+use Roadie\Curl;
+use Roadie\GarminClient;
+use Roadie\Gpx;
 
 $curl = new Curl();
 
 $client = new GarminClient($curl);
 
 $client->login('Login name', 'Password');
+
+// Update latest runs
+// Extract save
+// Include import from db.php
+// $client->getActivities(0, 10);
+
+// $client->getGpx(15139210734);
+
+
+$gpx = new Gpx();
+$gpx->loadFile('activity_15139210734.gpx');
+$gpx->enrich();
+$gpx->analyze();
+
 ````
 
 ## Dependencies
 This project has been tested with PHP 7.0+ and relies on `return type declaration` and `scalar type hints`, 
 which are only allowed since PHP 7.0. 
 
+Update: Typed properties are only allowed since PHP 7.4
 
 This project is heavily based on: 
 - [garth](https://github.com/matin/garth/blob/main/garth/sso.py): Garmin SSO auth + Connect Python client
