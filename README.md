@@ -23,6 +23,25 @@ $client = new GarminClient($curl);
 $client->login('Login name', 'Password');
 ````
 
+## Simplify GPS track with use of Ramer–Douglas–Peucker algorithm
+See this [Wikipedia article](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm)
+
+
+## Testing with PHPUnit Docker
+### Build the image (after changes to the Dockerfile)
+```shell
+docker build --force-rm --tag "roadie/phpunit" --file .docker/phpunit/Dockerfile .
+```
+### RUN
+```shell
+docker run -it --rm --volume ${pwd}:/app "roadie/phpunit" --
+```
+### RUN Single test
+```shell
+docker run -it --rm --volume ${pwd}:/app --name="phpunit" "roadie/phpunit" /app/tests/RamerDouglasPeuckerTest.php
+```
+
+
 ## Dependencies
 This project has been tested with PHP 7.0+ and relies on `return type declaration` and `scalar type hints`, 
 which are only allowed since PHP 7.0. 

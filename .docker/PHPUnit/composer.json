@@ -1,0 +1,11 @@
+{
+  "name": "roadie/php-garmin-connect",
+  "description": "Client connector to the Garmin Connect API in php",
+  "type": "project",
+  "authors": [
+    {
+      "name": "Roadie"
+    }
+  ],
+  "require": {}
+}
