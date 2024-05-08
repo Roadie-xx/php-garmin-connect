@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Roadie;
 
+use Roadie\Point2D;
+
 /**
  * Based on https://github.com/david-r-edgar/RDP-PHP/blob/master/src/RDP.php
  */
@@ -54,7 +56,7 @@ class RamerDouglasPeucker
 
         // Find the point with the maximum distance
         for ($i = 1; $i < ($totalPoints - 1); $i++) {
-            $distance = self::perpendicularDistance2d($points[$i], $points[0], $points[$totalPoints-1][0]);
+            $distance = self::perpendicularDistance2d($points[$i], $points[0], $points[$totalPoints-1]);
 
             if ($distance > $maxDistance) {
                 $index = $i;
@@ -84,5 +86,4 @@ class RamerDouglasPeucker
 
         return $resulPoints;
     }
-
 }
