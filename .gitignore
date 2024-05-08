@@ -1,1 +1,6 @@
 .idea/
+.git/
+.phpunit.result.cache
+/tests/bootstrap.php
+/composer.json
+/phpunit.xml
