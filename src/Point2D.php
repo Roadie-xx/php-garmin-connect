@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Roadie;
 
-
 class Point2D
 {
     private float $x;
@@ -26,4 +25,3 @@ class Point2D
         return $this->y;
     }
 }
-
