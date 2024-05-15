@@ -7,7 +7,11 @@ namespace Roadie;
 use Roadie\Point2D;
 
 /**
- * Based on https://github.com/david-r-edgar/RDP-PHP/blob/master/src/RDP.php
+ * PHP implementation of the Ramer–Douglas–Peucker algorithm for polyline simplification.
+ * An implementation for reducing the number of points on a polyline.
+ *
+ * @see: https://github.com/david-r-edgar/RDP-PHP
+ * @see: http://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm
  */
 class SimplifiedPolyline
 {
