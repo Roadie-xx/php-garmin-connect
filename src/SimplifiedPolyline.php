@@ -9,7 +9,7 @@ use Roadie\Point2D;
 /**
  * Based on https://github.com/david-r-edgar/RDP-PHP/blob/master/src/RDP.php
  */
-class RamerDouglasPeucker
+class SimplifiedPolyline
 {
     /**
      * Finds the perpendicular distance from a point to a straight line.

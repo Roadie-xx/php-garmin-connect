@@ -6,10 +6,10 @@ namespace Tests\Roadie;
 
 use Roadie\InvalidParameterException;
 use Roadie\Point2D;
-use Roadie\RamerDouglasPeucker as RDP;
+use Roadie\SimplifiedPolyline as RDP;
 use PHPUnit\Framework\TestCase;
 
-class RamerDouglasPeuckerTest extends TestCase
+class SimplifiedPolylineTest extends TestCase
 {
     // Basic tests
 
