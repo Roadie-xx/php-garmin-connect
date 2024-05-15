@@ -13,8 +13,8 @@ Branches:
 
 ## How to use
 ````php
-use Roadie/Curl;
-use Roadie/GarminClient;
+use Roadie\Curl;
+use Roadie\GarminClient;
 
 $curl = new Curl();
 
